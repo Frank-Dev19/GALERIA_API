@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Photo } from 'src/photos/photo.entity';
 
 @Entity('albums')
 export class Album {
@@ -16,4 +17,7 @@ export class Album {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @OneToMany(() => Photo, photo => photo.album)
+    photos: Photo[];
 }

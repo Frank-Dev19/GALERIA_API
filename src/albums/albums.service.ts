@@ -24,11 +24,21 @@ export class AlbumsService {
         });
     }
 
+    // async findOne(id: number): Promise<Album> {
+    //     const album = await this.albumRepository.findOne({ where: { id } });
+    //     if (!album) throw new NotFoundException('Álbum no encontrado');
+    //     return album;
+    // }
+
     async findOne(id: number): Promise<Album> {
-        const album = await this.albumRepository.findOne({ where: { id } });
+        const album = await this.albumRepository.findOne({
+            where: { id },
+            relations: ['photos'], // 👈 esto es lo nuevo
+        });
         if (!album) throw new NotFoundException('Álbum no encontrado');
         return album;
     }
+
 
     async remove(id: number): Promise<void> {
         const result = await this.albumRepository.delete(id);
