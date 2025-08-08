@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Photo } from './photo.entity';
 import { CreatePhotoDto } from './create-photo.dto';
 import { Album } from 'src/albums/albums.entity';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class PhotosService {
@@ -13,7 +14,21 @@ export class PhotosService {
         private photoRepo: Repository<Photo>,
         @InjectRepository(Album)
         private albumRepo: Repository<Album>,
+        private cloudinaryService: CloudinaryService
     ) { }
+
+    async uploadPhoto(file: Express.Multer.File, albumId: number) {
+        if (!file) {
+            throw new BadRequestException('No se envió ninguna imagen');
+        }
+
+        const uploadResult = await this.cloudinaryService.uploadImage(file);
+        return this.addPhoto({
+            imageUrl: uploadResult.secure_url,
+            albumId
+        });
+    }
+
 
     async addPhoto(dto: CreatePhotoDto) {
         const album = await this.albumRepo.findOne({ where: { id: dto.albumId } });
