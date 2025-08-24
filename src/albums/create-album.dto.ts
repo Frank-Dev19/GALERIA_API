@@ -1,16 +1,22 @@
 // src/albums/dto/create-album.dto.ts
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, MaxLength } from 'class-validator';
 
 export class CreateAlbumDto {
     @IsString()
-    @IsNotEmpty()
+    @MaxLength(100)
     title: string;
 
-    @IsString()
     @IsOptional()
-    description?: string;
+    @IsString()
+    @MaxLength(50)
+    icon?: string;
 
-    @IsString()
     @IsOptional()
-    coverUrl?: string;
+    @IsString()
+    @MaxLength(100)
+    color?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    isPublic?: boolean;
 }

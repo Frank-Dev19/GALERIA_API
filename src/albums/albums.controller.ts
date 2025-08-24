@@ -1,9 +1,9 @@
-import { Controller, Post, Get, Param, Delete, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Post, Patch, Get, Param, Delete, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { Album } from './albums.entity';
 import { CreateAlbumDto } from './create-album.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-
+import { UpdateAlbumsDto } from './update-albums.dto';
 
 @Controller('albums')
 export class AlbumsController {
@@ -30,6 +30,15 @@ export class AlbumsController {
     @Delete(':id')
     remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return this.albumsService.remove(id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':id')
+    updatePhoto(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateAlbumsDto,
+    ) {
+        return this.albumsService.updateAlbums(id, dto);
     }
 
 }

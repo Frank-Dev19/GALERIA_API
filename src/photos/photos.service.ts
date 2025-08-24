@@ -5,6 +5,8 @@ import { Photo } from './photo.entity';
 import { CreatePhotoDto } from './create-photo.dto';
 import { Album } from 'src/albums/albums.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UpdatePhotoDto } from './update-photo.dto';
+
 
 @Injectable()
 export class PhotosService {
@@ -24,7 +26,7 @@ export class PhotosService {
 
         const uploadResult = await this.cloudinaryService.uploadImage(file);
         return this.addPhoto({
-            imageUrl: uploadResult.secure_url,
+            src: uploadResult.secure_url,
             albumId
         });
     }
@@ -35,9 +37,10 @@ export class PhotosService {
         if (!album) throw new NotFoundException('Álbum no encontrado');
 
         const photo = this.photoRepo.create({
-            imageUrl: dto.imageUrl,
-            caption: dto.caption,
+            src: dto.src,
+            alt: dto.alt,
             album,
+            isPublic: dto.isPublic ?? true, // por defecto público
         });
 
         return this.photoRepo.save(photo);
@@ -46,13 +49,13 @@ export class PhotosService {
     async getPhotosByAlbum(albumId: number) {
         return this.photoRepo.find({
             where: { album: { id: albumId } },
-            order: { createdAt: 'DESC' },
+            order: { uploadDate: 'DESC' },
         });
     }
 
     findAll(): Promise<Photo[]> {
         return this.photoRepo.find({
-            order: { createdAt: 'DESC' },
+            order: { uploadDate: 'DESC' },
         });
     }
 
@@ -62,5 +65,21 @@ export class PhotosService {
         await this.photoRepo.remove(photo);
         return { message: 'Foto eliminada con éxito' };
     }
+
+
+    async updatePhoto(id: number, dto: UpdatePhotoDto) {
+        const photo = await this.photoRepo.findOne({ where: { id } });
+        if (!photo) throw new NotFoundException('Foto no encontrada');
+
+        if (dto.alt !== undefined) {
+            photo.alt = dto.alt;
+        }
+        if (dto.isPublic !== undefined) {
+            photo.isPublic = dto.isPublic;
+        }
+
+        return this.photoRepo.save(photo);
+    }
+
 
 }

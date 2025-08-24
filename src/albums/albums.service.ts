@@ -3,7 +3,7 @@ import { Album } from './albums.entity';
 import { CreateAlbumDto } from './create-album.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import { UpdateAlbumsDto } from './update-albums.dto';
 
 @Injectable()
 export class AlbumsService {
@@ -20,6 +20,7 @@ export class AlbumsService {
 
     findAll(): Promise<Album[]> {
         return this.albumRepository.find({
+            relations: ['photos'],
             order: { createdAt: 'DESC' },
         });
     }
@@ -36,6 +37,12 @@ export class AlbumsService {
             relations: ['photos'], // 👈 esto es lo nuevo
         });
         if (!album) throw new NotFoundException('Álbum no encontrado');
+
+        // Incrementar vistas
+        await this.albumRepository.increment({ id }, 'views', 1)
+
+        // Refrescar valor actualizado de views
+        album.views++;
         return album;
     }
 
@@ -45,6 +52,17 @@ export class AlbumsService {
         if (result.affected === 0) {
             throw new NotFoundException('Álbum no encontrado');
         }
+    }
+
+    async updateAlbums(id: number, dto: UpdateAlbumsDto) {
+        const album = await this.albumRepository.findOne({ where: { id } });
+        if (!album) throw new NotFoundException('Album no encontrado');
+
+        if (dto.isPublic !== undefined) {
+            album.isPublic = dto.isPublic;
+        }
+
+        return this.albumRepository.save(album);
     }
 
 }

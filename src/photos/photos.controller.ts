@@ -1,10 +1,12 @@
-import { Controller, Post, Get, Delete, UseGuards, UseInterceptors, UploadedFile, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Patch, Get, Delete, UseGuards, UseInterceptors, UploadedFile, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { CreatePhotoDto } from './create-photo.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PhotosService } from './photos.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Photo } from './photo.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UpdatePhotoDto } from './update-photo.dto';
+
 
 @Controller('photos')
 export class PhotosController {
@@ -39,6 +41,15 @@ export class PhotosController {
     @Delete(':id')
     deletePhoto(@Param('id', ParseIntPipe) id: number) {
         return this.photosService.deletePhoto(id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':id')
+    updatePhoto(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdatePhotoDto,
+    ) {
+        return this.photosService.updatePhoto(id, dto);
     }
 
 }
